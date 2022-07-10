@@ -93,8 +93,10 @@ helper.empty('./build/').then(async () => {
   }
   if (d['background']) {
     const worker = helper.resolveFile(d['background']['service_worker'], extension, extension);
+    const root = path.dirname(path.resolve(extension, d['background']['service_worker']));
+
     const scripts = [
-      ...[...await helper.scripts(worker)].map(f => helper.resolveFile(f, extension, extension)),
+      ...[...await helper.scripts(worker)].map(f => helper.resolveFile(f, root, root)),
       worker
     ];
     const v2 = new Set();
