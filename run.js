@@ -3,6 +3,9 @@ const path = require('path');
 const AdmZip = require('adm-zip');
 const zip = new AdmZip();
 
+
+process.chdir(__dirname);
+
 const helper = require('./helper');
 
 const overwrites = [
@@ -25,7 +28,8 @@ const add = async (name, content) => {
 };
 
 helper.empty('./build/').then(async () => {
-  const extension = process.argv[2];
+  const extension = (process.argv[2] + '/').replace('//', '/');
+  const pageAction = extension.includes('country-flags');
 
   const files = await helper.files(extension);
   const manifest = files.filter(a => a.endsWith('manifest.json')).shift();
@@ -72,7 +76,7 @@ helper.empty('./build/').then(async () => {
     d['permissions'].push(
       ...d['host_permissions']
     );
-    delete d['optional_host_permissions'];
+    delete d['host_permissions'];
   }
   if (d['optional_host_permissions']) {
     d['optional_permissions'] = d['optional_permissions'] || [];
@@ -83,12 +87,13 @@ helper.empty('./build/').then(async () => {
   }
   if (d['commands']) {
     if (d['commands']['_execute_action']) {
-      d['commands']['_execute_browser_action'] = {};
+      d['commands'][pageAction ? '_execute_page_action' : '_execute_browser_action'] = {};
     }
     delete d['commands']['_execute_action'];
   }
   if (d['action']) {
-    d['browser_action'] = d['action'];
+    d[pageAction ? 'page_action' : 'browser_action'] = d['action'];
+
     delete d['action'];
   }
   if (d['background']) {
@@ -152,25 +157,6 @@ helper.empty('./build/').then(async () => {
     const name = 'v2/' + s + '.js';
     add(name, await helper.readFile(name));
   }
-
-  // for (const file of [
-  //   manifest,
-  //   ...files.filter(s => s !== manifest)
-  // ]) {
-  //   const content = await convert(file, base);
-  //   if (file !== manifest) {
-  //     add(file.replace(base, ''), content, base);
-  //   }
-  // }
-
-  // for (const file of Object.keys(convert.v2)) {
-  //   const p = 'v2/' + file + '.js';
-  //   const content = await helper.readFile(p);
-  //   add(p, content, base);
-  //   convert.manifest.background.scripts.unshift(p);
-  // }
-
-  // add('manifest.json', Buffer.from(JSON.stringify(convert.manifest, undefined, '  '), 'utf8'), base);
 
   zip.writeZip('test.zip');
 });

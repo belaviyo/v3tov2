@@ -1,6 +1,11 @@
 chrome.contextMenus.create = new Proxy(chrome.contextMenus.create, {
   apply(target, self, [properties, c]) {
-    properties.contexts = properties.contexts.map(s => s === 'action' ? 'browser_action' : s);
+    properties.contexts = properties.contexts.map(s => {
+      if (s === 'action') {
+        return chrome.pageAction ? 'page_action' : 'browser_action';
+      }
+      return s;
+    });
     Reflect.apply(target, self, [properties, c]);
   }
 });
