@@ -3,7 +3,6 @@ const path = require('path');
 const AdmZip = require('adm-zip');
 const zip = new AdmZip();
 
-
 process.chdir(__dirname);
 
 const helper = require('./helper');
@@ -29,9 +28,10 @@ const add = async (name, content) => {
 
 helper.empty('./build/').then(async () => {
   const extension = (process.argv[2] + '/').replace('//', '/');
-  const pageAction = extension.includes('country-flags');
+  const fixes = require('./fixes.js').per(extension);
 
-  const files = await helper.files(extension);
+  const files = (await helper.files(extension)).filter(fixes.files);
+
   const manifest = files.filter(a => a.endsWith('manifest.json')).shift();
   if (!manifest) {
     throw Error('cannot find manifest.json');
@@ -67,8 +67,10 @@ helper.empty('./build/').then(async () => {
       contents[file] = Buffer.from(content, 'utf8');
     }
   }
+
   // fix manifest
   const d = JSON.parse(contents[manifest].toString());
+  const pageAction = fixes.isPageAction();
   delete d['minimum_chrome_version'];
   d['manifest_version'] = 2;
   if (d['host_permissions']) {
@@ -126,6 +128,7 @@ helper.empty('./build/').then(async () => {
       scripts.map(f => f.replace(extension, ''))
     ].flat();
     delete d['background']['service_worker'];
+
     // delete importScripts
     for (const script of scripts) {
       contents[script] = Buffer.from(
@@ -133,19 +136,19 @@ helper.empty('./build/').then(async () => {
         'utf8'
       );
     }
-    // clean up
-    d['permissions'] = d['permissions'].filter((s, i, l) => l.indexOf(s) === i);
   }
-  if (d['permissions']) {
-    d['permissions'] = d['permissions'].filter(a => a !== 'scripting');
-  }
-  if (d['optional_permissions']) {
-    d['optional_permissions'] = d['optional_permissions'].filter(a => a !== 'scripting');
-  }
+  fixes.extraPermissions(d);
+
   delete d['offline_enabled'];
   if (d['web_accessible_resources']) {
     d['web_accessible_resources'] = d['web_accessible_resources'].map(o => o.resources).flat();
   }
+
+  if (d['content_security_policy']) {
+    d['content_security_policy'] = d['content_security_policy']['extension_pages'];
+  }
+  fixes.cleanup(d);
+
   contents[manifest] = Buffer.from(JSON.stringify(d, undefined, '  '), 'utf8');
 
 

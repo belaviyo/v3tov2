@@ -6,6 +6,6 @@ chrome.contextMenus.create = new Proxy(chrome.contextMenus.create, {
       }
       return s;
     });
-    Reflect.apply(target, self, [properties, c]);
+    return Reflect.apply(target, self, [properties, c]);
   }
 });

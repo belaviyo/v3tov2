@@ -13,6 +13,9 @@ chrome.scripting = chrome.scripting || {
       props.allFrames = true;
       props.matchAboutBlank = true;
     }
+    if (target.frameIds && target.frameIds.length) {
+      props.frameId = target.frameIds[0];
+    }
 
     return new Promise((resolve, reject) => {
       try {
@@ -35,6 +38,37 @@ chrome.scripting = chrome.scripting || {
             else {
               resolve(r.map(result => ({result})));
             }
+          }
+        });
+      }
+      catch (e) {
+        reject(e);
+      }
+    });
+  },
+  insertCSS({target, files}) {
+    const props = {};
+
+    if (files) {
+      props.file = files[0];
+    }
+    if (target.allFrames) {
+      props.allFrames = true;
+      props.matchAboutBlank = true;
+    }
+    if (target.frameIds && target.frameIds.length) {
+      props.frameId = target.frameIds[0];
+    }
+
+    return new Promise((resolve, reject) => {
+      try {
+        chrome.tabs.insertCSS(target.tabId, props, r => {
+          const lastError = chrome.runtime.lastError;
+          if (lastError) {
+            reject(lastError);
+          }
+          else {
+            resolve();
           }
         });
       }
