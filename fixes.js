@@ -21,6 +21,9 @@ exports.per = extension => ({
       delete d['optional_permissions'];
       delete d['content_security_policy'];
     }
+    if (extension.includes('block-site')) {
+      delete d['incognito'];
+    }
     if (d['permissions']) {
       d['permissions'] = d['permissions'].filter(n => LIST.includes(n) === false);
       d['permissions'] = d['permissions'].filter((s, i, l) => l.indexOf(s) === i);

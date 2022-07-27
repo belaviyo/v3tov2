@@ -4,10 +4,8 @@
   };
 
   const onBeforeRequest = d => {
-    const as = Object.values(cache.dynamic).filter(r => r.action.type === 'allow');
-    const rs = Object.values(cache.dynamic).filter(r => r.action.type === 'redirect');
-
     // allow
+    const as = Object.values(cache.dynamic).filter(r => r.action.type === 'allow');
     for (const rule of as) {
       try {
         if (rule.condition.resourceTypes.includes(d.type)) {
@@ -18,6 +16,7 @@
           }
           // https://www.example.com*
           else if (rule.condition.urlFilter) {
+            // wildcard support
             if (rule.condition.urlFilter.includes('*')) {
               const result = rule.condition.urlFilter
                 .replace(/([/()[\].?])/g, '\\$1')
@@ -43,6 +42,7 @@
       }
     }
     // redirect
+    const rs = Object.values(cache.dynamic).filter(r => r.action.type === 'redirect');
     for (const rule of rs) {
       try {
         if (rule.condition.resourceTypes.includes(d.type) && rule.condition.regexp.test(d.url)) {
@@ -105,7 +105,7 @@
   };
 
   chrome.declarativeNetRequest = chrome.declarativeNetRequest || {
-    MAX_NUMBER_OF_REGEX_RULES: 1000,
+    MAX_NUMBER_OF_REGEX_RULES: 5000,
     getDynamicRules() {
       return Promise.resolve(Object.values(cache.dynamic));
     },
