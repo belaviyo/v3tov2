@@ -6,8 +6,8 @@ chrome.scripting = chrome.scripting || {
       props.file = files[0];
     }
     if (func) {
-      const s = btoa(JSON.stringify(args));
-      props.code = '(' + func.toString() + `)(...JSON.parse(atob('${s}')))`;
+      const s = btoa(unescape(encodeURIComponent(JSON.stringify(args))));
+      props.code = '(' + func.toString() + `)(...JSON.parse(decodeURIComponent(escape(atob('${s}')))))`;
     }
     if (target.allFrames) {
       props.allFrames = true;
@@ -19,7 +19,7 @@ chrome.scripting = chrome.scripting || {
 
     return new Promise((resolve, reject) => {
       try {
-        chrome.tabs.executeScript(target.tabId, props, r => {
+        chrome.tabs.executeScript(target.tabId, props, (r = []) => {
           const lastError = chrome.runtime.lastError;
           if (lastError) {
             reject(lastError);

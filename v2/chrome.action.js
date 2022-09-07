@@ -10,4 +10,6 @@ if (chrome.pageAction) {
       return Reflect.apply(target, self, args);
     }
   });
+  chrome.pageAction.setBadgeBackgroundColor = chrome.pageAction.setBadgeBackgroundColor || function() {};
+  chrome.pageAction.setBadgeText = chrome.pageAction.setBadgeText || function() {};
 }

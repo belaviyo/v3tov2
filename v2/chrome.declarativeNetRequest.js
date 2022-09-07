@@ -1,6 +1,7 @@
 {
   const cache = {
-    dynamic: {}
+    dynamic: {},
+    session: {}
   };
 
   const onBeforeRequest = d => {
@@ -110,12 +111,26 @@
       return Promise.resolve(Object.values(cache.dynamic));
     },
     updateDynamicRules({removeRuleIds = [], addRules = []}) {
-      removeRuleIds.forEach(id => remove(id));
+      removeRuleIds.forEach(id => remove(id, 'dynamic'));
       addRules.forEach(rule => {
         if (cache.dynamic[rule.id]) {
           throw Error('duplicated id: ' + rule.id);
         }
-        add(rule);
+        add(rule, 'dynamic');
+      });
+
+      return Promise.resolve();
+    },
+    getSessionRules() {
+      return Promise.resolve(Object.values(cache.session));
+    },
+    updateSessionRules({removeRuleIds = [], addRules = []}) {
+      removeRuleIds.forEach(id => remove(id, 'session'));
+      addRules.forEach(rule => {
+        if (cache.session[rule.id]) {
+          throw Error('duplicated id: ' + rule.id);
+        }
+        add(rule, 'session');
       });
 
       return Promise.resolve();
