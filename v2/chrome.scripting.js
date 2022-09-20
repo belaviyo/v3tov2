@@ -16,6 +16,7 @@ chrome.scripting = chrome.scripting || {
     if (target.frameIds && target.frameIds.length) {
       props.frameId = target.frameIds[0];
     }
+    props.runAt = 'document_start';
 
     return new Promise((resolve, reject) => {
       try {
@@ -59,6 +60,7 @@ chrome.scripting = chrome.scripting || {
     if (target.frameIds && target.frameIds.length) {
       props.frameId = target.frameIds[0];
     }
+    props.runAt = 'document_start';
 
     return new Promise((resolve, reject) => {
       try {
