@@ -94,11 +94,15 @@ const walk = dir => new Promise((resolve, reject) => {
 exports.files = walk;
 
 exports.scripts = file => readFile(file).then(data => {
-  const ms = [...data.toString().matchAll(/importScripts\(([^)]+)\)/g)]
+  const m1 = [...data.toString().matchAll(/importScripts\(([^)]+)\)/g)]
     .map(a => a[1].split(/\s*,\s*/)).flat().map(s => s.replace(/^['"]/, '').replace(/['"]$/, ''))
     .filter((s, i, l) => s && l.indexOf(s) === i);
 
-  const matches = [...data.toString().matchAll(/<script.*src=['"]([^'"]+)['"]/g)].map(a => a[1]);
+  const m2 = [...data.toString().matchAll(/<script.*src=['"]([^'"]+)['"]/g)].map(a => a[1]);
 
-  return [...ms, ...matches];
+  const m3 = [...data.toString().matchAll(/import[^'"]+['"]([^'"]+)['"]/g)].map(a => a[1]);
+
+  const r = [...m1, ...m2];
+  r.modules = m3;
+  return r;
 });

@@ -13,7 +13,7 @@ const overwrites = [
   ...fs.readdirSync('v2').map(a => a.slice(0, -3))
 ];
 
-const add = async (name, content) => {
+const add = (name, content) => {
   zip.addFile(name, content);
 
   const fn = path.resolve('./build/', name);
@@ -102,13 +102,20 @@ helper.empty('./build/').then(async () => {
     const worker = helper.resolveFile(d['background']['service_worker'], extension, extension);
     const root = path.dirname(path.resolve(extension, d['background']['service_worker']));
 
+    const sc = await helper.scripts(worker);
     const scripts = [
-      ...[...await helper.scripts(worker)].map(f => helper.resolveFile(f, root, root)),
+      ...[...await sc].map(f => helper.resolveFile(f, root, root)),
       worker
     ];
+    // modules
+    const modules = [
+      ...[...sc.modules].map(f => helper.resolveFile(f, root, root)),
+      worker
+    ];
+
     const v2 = new Set();
 
-    for (const script of scripts) {
+    for (const script of [...scripts, ...modules]) {
       const content = (await helper.readFile(script)).toString();
 
       for (const key of overwrites) {
@@ -123,10 +130,26 @@ helper.empty('./build/').then(async () => {
       }
     }
 
-    d['background']['scripts'] = [
+    const bgs = [
       [...v2].map(f => `/v2/${f}.js`),
       scripts.map(f => f.replace(extension, ''))
     ].flat();
+
+    if (d['background']['type'] === 'module') {
+      d['background']['page'] = 'background.html';
+      delete d['background']['type'];
+
+      add('background.html', `<!DOCTYPE html>
+<html>
+<body>
+${bgs.map(a => `<script type="${a.endsWith('mjs') ? 'module' : 'text/javascript'}" src="${a}"></script>`).join('\n')}
+</body>
+</html>`);
+    }
+    else {
+      d['background']['scripts'] = bgs;
+    }
+
     delete d['background']['service_worker'];
 
     // delete importScripts
