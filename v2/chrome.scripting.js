@@ -1,5 +1,5 @@
 chrome.scripting = chrome.scripting || {
-  executeScript({target, files, func, args = []}) {
+  executeScript({target, files, func, world, args = []}) {
     const props = {};
 
     if (files) {
@@ -7,7 +7,20 @@ chrome.scripting = chrome.scripting || {
     }
     if (func) {
       const s = btoa(unescape(encodeURIComponent(JSON.stringify(args))));
-      props.code = '(' + func.toString() + `)(...JSON.parse(decodeURIComponent(escape(atob('${s}')))))`;
+
+      props.code = `{
+        const f = ${func.toString()};
+        const context = '${world}';
+        if (context !== 'MAIN') {
+          f(...JSON.parse(decodeURIComponent(escape(atob('${s}')))));
+        }
+        else {
+          const s = document.createElement('script');
+          s.textContent = '(' + f.toString() + ')(...JSON.parse(decodeURIComponent(escape(atob("${s}")))))';
+          document.body.append(s);
+          s.remove();
+        }
+      }`;
     }
     if (target.allFrames) {
       props.allFrames = true;
