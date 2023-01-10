@@ -110,7 +110,7 @@
     getDynamicRules() {
       return Promise.resolve(Object.values(cache.dynamic));
     },
-    updateDynamicRules({removeRuleIds = [], addRules = []}) {
+    updateDynamicRules({removeRuleIds = [], addRules = []}, callback = () => {}) {
       removeRuleIds.forEach(id => remove(id, 'dynamic'));
       addRules.forEach(rule => {
         if (cache.dynamic[rule.id]) {
@@ -119,12 +119,13 @@
         add(rule, 'dynamic');
       });
 
+      callback();
       return Promise.resolve();
     },
     getSessionRules() {
       return Promise.resolve(Object.values(cache.session));
     },
-    updateSessionRules({removeRuleIds = [], addRules = []}) {
+    updateSessionRules({removeRuleIds = [], addRules = []}, callback = () => {}) {
       removeRuleIds.forEach(id => remove(id, 'session'));
       addRules.forEach(rule => {
         if (cache.session[rule.id]) {
@@ -133,6 +134,7 @@
         add(rule, 'session');
       });
 
+      callback();
       return Promise.resolve();
     }
   };

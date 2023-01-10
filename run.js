@@ -87,6 +87,14 @@ helper.empty('./build/').then(async () => {
     );
     delete d['optional_host_permissions'];
   }
+
+  if (d['optional_permissions'].includes('favicon')) {
+    d['optional_permissions'].splice(
+      d['optional_permissions'].indexOf('favicon'),
+      1
+    );
+  }
+
   if (d['commands']) {
     if (d['commands']['_execute_action']) {
       d['commands'][pageAction ? '_execute_page_action' : '_execute_browser_action'] = {};
@@ -129,6 +137,8 @@ helper.empty('./build/').then(async () => {
         d['permissions'].push('clipboardWrite');
       }
     }
+
+    delete d['incognito'];
 
     const bgs = [
       [...v2].map(f => `/v2/${f}.js`),
