@@ -88,7 +88,7 @@ helper.empty('./build/').then(async () => {
     delete d['optional_host_permissions'];
   }
 
-  if (d['optional_permissions'].includes('favicon')) {
+  if (d['optional_permissions'] && d['optional_permissions'].includes('favicon')) {
     d['optional_permissions'].splice(
       d['optional_permissions'].indexOf('favicon'),
       1

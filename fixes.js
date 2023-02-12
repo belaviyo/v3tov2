@@ -15,6 +15,11 @@ exports.per = extension => ({
     if (extension.includes('block-site')) {
       d['permissions'].push('webRequest', 'webRequestBlocking');
     }
+
+    if (d['permissions'].includes('offscreen')) {
+      const n = d['permissions'].indexOf('offscreen');
+      d['permissions'].splice(n, 1);
+    }
   },
   cleanup(d) {
     if (extension.includes('qrcode-reader')) {
