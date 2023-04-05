@@ -1,5 +1,11 @@
 chrome.storage.session = chrome.storage.session || {
   get(ps, c) {
+    if (typeof ps === 'string') {
+      ps = {
+        [ps]: ''
+      };
+    }
+
     const r = {};
     for (const [key, value] of Object.entries(ps)) {
       const o = sessionStorage.getItem(key);
